@@ -535,20 +535,18 @@
             { name: "스켈레톤 보병", hp: 1, speed: 1.0, size: 0.9, score: 440, dmg: 10, minLen: 3, maxLen: 5, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
             { name: "드래곤", hp: 2, speed: 0.65, size: 0.8, score: 640, dmg: 10, minLen: 4, maxLen: 6, boss: false, castSpeed: null, evade: null, stun: 2, timing: null },
             { name: "미노타우르스", hp: 2, speed: 0.8, size: 0.47, score: 840, dmg: 15, minLen: 4, maxLen: 6, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
-            { name: "하이드라 (보스)", hp: 3, speed: 1.0, size: 1.0, score: 4000, dmg: 30, minLen: null, maxLen: null, boss: true, castSpeed: 16, evade: null, stun: null, timing: null },
         ];
 
         const WAVE_LIMITS = [3, 4, 5, 6, 7, 8];
         const WAVE_DEFAULTS = [
             [38, 40, 30, 20, 20, 15],
             [29, 35, 30, 20, 15, 14],
+            [33, 15, 15, 15, 15, 11],
+            [0, 10, 10, 10, 10, 12],
+            [0, 0, 15, 20, 10, 14],
             [0, 0, 0, 15, 15, 15],
             [0, 0, 0, 0, 15, 12],
-            [0, 0, 15, 20, 10, 14],
-            [0, 0, 0, 0, 0, 7],
-            [0, 10, 10, 10, 10, 12],
-            [0, 0, 0, 0, 0, 0],
-            [33, 15, 15, 15, 15, 11]
+            [0, 0, 0, 0, 0, 7]
         ];
 
         let state = BASE.map(m => ({
