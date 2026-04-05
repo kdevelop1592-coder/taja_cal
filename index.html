@@ -455,7 +455,7 @@
             <div class="rule-chip">📏 MinLen·MaxLen 함께 ±1 → 스코어 <span>±10%</span></div>
             <div class="rule-chip">💫 회피 ±10% → 스코어 <span>±10%</span> (발광버섯 전용)</div>
             <div class="rule-chip">🌀 스턴 ±1초 → 스코어 <span>∓10%</span> (드래곤 전용)</div>
-            <div class="rule-chip">🚀 가속 ±100 → 스코어 <span>±10%</span> (나무상자 전용)</div>
+            <div class="rule-chip">🚀 가속 ±100 → 스코어 <span>±10%</span> (상자/트리몬트 전용)</div>
             <div class="rule-chip cast-rule">🔮 캐스팅 −1초 → 스코어 <span>+20%</span> (보스 전용)</div>
         </div>
 
@@ -512,26 +512,28 @@
 
     <script>
         const BASE = [
-            { name: "슬라임", hp: 1, speed: 0.6, size: 0.24, score: 200, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
-            { name: "머쉬룸", hp: 1, speed: 0.6, size: 0.69, score: 220, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
-            { name: "발광 버섯", hp: 1, speed: 0.7, size: 1.0, score: 240, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null, evade: 30, stun: null, timing: null },
-            { name: "나무 상자", hp: 1, speed: 0.8, size: 1.0, score: 260, dmg: 10, minLen: 3, maxLen: 4, boss: false, castSpeed: null, evade: null, stun: null, timing: 500 },
-            { name: "트리몬트", hp: 1, speed: 1.0, size: 0.92, score: 280, dmg: 10, minLen: 3, maxLen: 4, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
-            { name: "스켈레톤 보병", hp: 1, speed: 1.0, size: 0.9, score: 440, dmg: 10, minLen: 3, maxLen: 5, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
-            { name: "드래곤", hp: 2, speed: 0.65, size: 0.8, score: 640, dmg: 10, minLen: 4, maxLen: 6, boss: false, castSpeed: null, evade: null, stun: 2, timing: null },
-            { name: "미노타우르스", hp: 2, speed: 0.8, size: 0.47, score: 840, dmg: 15, minLen: 4, maxLen: 6, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
+            { name: "슬라임", hp: 1, speed: 0.8, size: 0.24, score: 150, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
+            { name: "머쉬룸", hp: 1, speed: 0.9, size: 0.69, score: 170, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
+            { name: "발광 버섯", hp: 1, speed: 1.0, size: 1.0, score: 250, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null, evade: 70, stun: null, timing: null },
+            { name: "나무 상자", hp: 1, speed: 0.9, size: 1.0, score: 300, dmg: 20, minLen: 3, maxLen: 4, boss: false, castSpeed: null, evade: null, stun: null, timing: 660 },
+            { name: "트리몬트", hp: 1, speed: 1.0, size: 0.92, score: 350, dmg: 15, minLen: 3, maxLen: 4, boss: false, castSpeed: null, evade: null, stun: null, timing: 525 },
+            { name: "스켈레톤 보병", hp: 1, speed: 1.0, size: 0.9, score: 300, dmg: 10, minLen: 3, maxLen: 5, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
+            { name: "드래곤", hp: 2, speed: 0.8, size: 0.8, score: 600, dmg: 15, minLen: 4, maxLen: 6, boss: false, castSpeed: null, evade: null, stun: 2, timing: null },
+            { name: "미노타우르스", hp: 3, speed: 0.9, size: 0.47, score: 660, dmg: 20, minLen: 4, maxLen: 6, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
+            { name: "하이드라 (보스)", hp: 3, speed: 1.0, size: 1.0, score: 4000, dmg: 30, minLen: null, maxLen: null, boss: true, castSpeed: 16, evade: null, stun: null, timing: null },
         ];
 
         const WAVE_LIMITS = [3, 4, 5, 6, 7, 8];
         const WAVE_DEFAULTS = [
-            [38, 40, 30, 20, 20, 15],
-            [29, 35, 30, 20, 15, 14],
-            [33, 15, 15, 15, 15, 11],
-            [0, 10, 10, 10, 10, 12],
+            [38, 28, 20, 16, 14, 15],
+            [29, 35, 20, 20, 15, 14],
+            [33, 15, 20, 15, 15, 11],
+            [0, 22, 25, 14, 16, 12],
             [0, 0, 15, 20, 10, 14],
             [0, 0, 0, 15, 15, 15],
             [0, 0, 0, 0, 15, 12],
-            [0, 0, 0, 0, 0, 7]
+            [0, 0, 0, 0, 0, 7],
+            [0, 0, 0, 0, 0, 0]
         ];
 
         let state = BASE.map(m => ({
