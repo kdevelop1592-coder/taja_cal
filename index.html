@@ -329,52 +329,199 @@
                 font-size: 12px;
             }
         }
+
+        /* Tab System */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .nav-tab:hover {
+            color: var(--text);
+        }
+
+        .nav-tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            background: rgba(91, 141, 238, 0.05);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Wave Calculator Table Specifics */
+        .wave-input {
+            width: 65px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px;
+            border-radius: 4px;
+            font-family: 'Space Mono', monospace;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .wave-input:disabled {
+            opacity: 0.15;
+            cursor: not-allowed;
+            border-color: transparent;
+        }
+
+        .sum-row {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .sum-row td {
+            padding: 16px 12px;
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            border-top: 2px solid var(--border);
+        }
+
+        .sum-val {
+            font-size: 15px;
+        }
+
+        .sum-ok {
+            color: var(--accent2);
+        }
+
+        .sum-bad {
+            color: var(--danger);
+        }
+
+        .monster-check {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent);
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        .monster-check:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .wave-limit-hint {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+            display: block;
+            font-weight: 400;
+        }
     </style>
 </head>
 
 <body>
 
     <header>
-        <h1>⚔️ MONSTER LEVEL CALC</h1>
-        <p>중학교 게임 디자인 수업용 레벨 계산기</p>
+        <h1>⚔️ MONSTER CALCULATOR</h1>
+        <p>중학교 게임 디자인 수업용 레벨 & 웨이브 계산기</p>
     </header>
 
-    <div class="rules">
-        <div class="rule-chip">❤️ 체력 ±1 → 스코어 <span>±10%</span></div>
-        <div class="rule-chip">⚡ 스피드 ±0.1 → 스코어 <span>±10%</span></div>
-        <div class="rule-chip">🏰 데미지 ±3 → 스코어 <span>±10%</span></div>
-        <div class="rule-chip">📏 MinLen·MaxLen 함께 ±1 → 스코어 <span>±10%</span></div>
-        <div class="rule-chip">💫 회피 ±10% → 스코어 <span>±10%</span> (발광버섯 전용)</div>
-        <div class="rule-chip">🌀 스턴 ±1초 → 스코어 <span>∓10%</span> (드래곤 전용)</div>
-        <div class="rule-chip">🚀 가속 ±100 → 스코어 <span>±10%</span> (나무상자 전용)</div>
-        <div class="rule-chip cast-rule">🔮 캐스팅 −1초 → 스코어 <span>+20%</span> (보스 전용)</div>
+    <div class="nav-tabs">
+        <div id="tab-lvl" class="nav-tab active" onclick="switchTab('lvl')">몬스터 레벨 계산기</div>
+        <div id="tab-wave" class="nav-tab" onclick="switchTab('wave')">웨이브 확률 계산기</div>
     </div>
 
-    <main>
-        <div class="top-bar">
-            <button class="reset-btn" onclick="resetAll()">↺ 전체 초기화</button>
+    <div id="content-lvl" class="tab-content active">
+        <div class="rules">
+            <div class="rule-chip">❤️ 체력 ±1 → 스코어 <span>±10%</span></div>
+            <div class="rule-chip">⚡ 스피드 ±0.1 → 스코어 <span>±10%</span></div>
+            <div class="rule-chip">🏰 데미지 ±3 → 스코어 <span>±10%</span></div>
+            <div class="rule-chip">📏 MinLen·MaxLen 함께 ±1 → 스코어 <span>±10%</span></div>
+            <div class="rule-chip">💫 회피 ±10% → 스코어 <span>±10%</span> (발광버섯 전용)</div>
+            <div class="rule-chip">🌀 스턴 ±1초 → 스코어 <span>∓10%</span> (드래곤 전용)</div>
+            <div class="rule-chip">🚀 가속 ±100 → 스코어 <span>±10%</span> (나무상자 전용)</div>
+            <div class="rule-chip cast-rule">🔮 캐스팅 −1초 → 스코어 <span>+20%</span> (보스 전용)</div>
         </div>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>이름</th>
-                        <th>❤️ 체력</th>
-                        <th>⚡ 스피드</th>
-                        <th>📐 크기</th>
-                        <th>🏰 데미지</th>
-                        <th>📏 Min·MaxLen</th>
-                        <th>💫 회피(%)</th>
-                        <th>🌀 스턴(초)</th>
-                        <th>🚀 가속(ms)</th>
-                        <th class="cast-col">🔮 캐스팅(초)</th>
-                        <th>💰 스코어</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody"></tbody>
-            </table>
-        </div>
-    </main>
+
+        <main>
+            <div class="top-bar">
+                <button class="reset-btn" onclick="resetAll()">↺ 전체 초기화</button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>이름</th>
+                            <th>❤️ 체력</th>
+                            <th>⚡ 스피드</th>
+                            <th>📐 크기</th>
+                            <th>🏰 데미지</th>
+                            <th>📏 Min·MaxLen</th>
+                            <th>💫 회피(%)</th>
+                            <th>🌀 스턴(초)</th>
+                            <th>🚀 가속(ms)</th>
+                            <th class="cast-col">🔮 캐스팅(초)</th>
+                            <th>💰 스코어</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <div id="content-wave" class="tab-content">
+        <main>
+            <div class="top-bar">
+                <p style="font-size: 13px; color: var(--muted); margin-bottom: 8px;">
+                    * 각 Wave별 지정된 마리수를 정확히 체크해야 입력을 시작할 수 있습니다.
+                </p>
+                <button class="reset-btn" onclick="resetWave()">↺ 웨이브 초기화</button>
+            </div>
+            <div class="table-wrap">
+                <table id="wave-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left;">몬스터 이름 (체크)</th>
+                            <th>W1 (3마리)</th>
+                            <th>W2 (4마리)</th>
+                            <th>W3 (5마리)</th>
+                            <th>W4 (6마리)</th>
+                            <th>W5 (7마리)</th>
+                            <th>W6 (8마리)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wave-tbody"></tbody>
+                    <tfoot>
+                        <tr class="sum-row">
+                            <td style="text-align: right; padding-right: 20px;">합계 (목표: 100%)</td>
+                            <td id="sum-w1">0%</td>
+                            <td id="sum-w2">0%</td>
+                            <td id="sum-w3">0%</td>
+                            <td id="sum-w4">0%</td>
+                            <td id="sum-w5">0%</td>
+                            <td id="sum-w6">0%</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </main>
+    </div>
 
     <footer>MONSTER LEVEL CALCULATOR · GitHub Pages Edition</footer>
 
@@ -391,12 +538,42 @@
             { name: "하이드라 (보스)", hp: 3, speed: 1.0, size: 1.0, score: 4000, dmg: 30, minLen: null, maxLen: null, boss: true, castSpeed: 16, evade: null, stun: null, timing: null },
         ];
 
+        const WAVE_LIMITS = [3, 4, 5, 6, 7, 8];
+        const WAVE_DEFAULTS = [
+            [38, 40, 30, 20, 20, 15],
+            [29, 35, 30, 20, 15, 14],
+            [0, 0, 0, 15, 15, 15],
+            [0, 0, 0, 0, 15, 12],
+            [0, 0, 15, 20, 10, 14],
+            [0, 0, 0, 0, 0, 7],
+            [0, 10, 10, 10, 10, 12],
+            [0, 0, 0, 0, 0, 0],
+            [33, 15, 15, 15, 15, 11]
+        ];
+
         let state = BASE.map(m => ({
             hp: m.hp, speed: m.speed, dmg: m.dmg,
             minLen: m.minLen, maxLen: m.maxLen, castSpeed: m.castSpeed,
             evade: m.evade, stun: m.stun, timing: m.timing,
         }));
 
+        let waveState = BASE.map((m, mi) => 
+            WAVE_LIMITS.map((_, wi) => ({
+                checked: WAVE_DEFAULTS[mi][wi] > 0,
+                rate: WAVE_DEFAULTS[mi][wi]
+            }))
+        );
+
+        // --- Tab Logic ---
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            document.getElementById(`content-${tab}`).classList.add('active');
+        }
+
+        // --- Level Calc Logic ---
         function calcScore(i) {
             const m = BASE[i];
             const s = state[i];
@@ -407,12 +584,10 @@
             const evadeD = m.evade !== null ? (s.evade - m.evade) / 10 : 0;
             const stunD = m.stun !== null ? (s.stun - m.stun) : 0;
             const timingD = m.timing !== null ? (s.timing - m.timing) / 100 : 0;
-            // 캐스팅: 1초 감소 → +20%, 1초 증가 → -20%
             const castD = m.castSpeed !== null ? (m.castSpeed - s.castSpeed) : 0;
 
             let factor = 1 + (hpD + spdD + dmgD + lenD + evadeD - stunD + timingD) * 0.10 + castD * 0.20;
             if (factor < 0) factor = 0;
-
             return Math.round(m.score * factor);
         }
 
@@ -435,116 +610,54 @@
 
             const evadeCell = hasEvade
                 ? `<div class="ctrl-cell">
-         <button class="ctl-btn minus" onclick="adj(${i},'evade',-10)">−</button>
-         <span class="ctl-val">${s.evade}%</span>
-         <button class="ctl-btn" onclick="adj(${i},'evade',+10)">+</button>
-       </div>`
-                : `<span class="static-val">—</span>`;
+          <button class="ctl-btn minus" onclick="adj(${i},'evade',-10)">−</button>
+          <span class="ctl-val">${s.evade}%</span>
+          <button class="ctl-btn" onclick="adj(${i},'evade',+10)">+</button>
+        </div>` : `<span class="static-val">—</span>`;
 
             const stunCell = hasStun
                 ? `<div class="ctrl-cell">
-         <button class="ctl-btn minus" onclick="adj(${i},'stun',-1)">−</button>
-         <span class="ctl-val">${s.stun}s</span>
-         <button class="ctl-btn" onclick="adj(${i},'stun',+1)">+</button>
-       </div>`
-                : `<span class="static-val">—</span>`;
+          <button class="ctl-btn minus" onclick="adj(${i},'stun',-1)">−</button>
+          <span class="ctl-val">${s.stun}s</span>
+          <button class="ctl-btn" onclick="adj(${i},'stun',+1)">+</button>
+        </div>` : `<span class="static-val">—</span>`;
 
             const timingCell = hasTiming
                 ? `<div class="ctrl-cell">
-         <button class="ctl-btn minus" onclick="adj(${i},'timing',-100)">−</button>
-         <span class="ctl-val">${s.timing}</span>
-         <button class="ctl-btn" onclick="adj(${i},'timing',+100)">+</button>
-       </div>`
-                : `<span class="static-val">—</span>`;
+          <button class="ctl-btn minus" onclick="adj(${i},'timing',-100)">−</button>
+          <span class="ctl-val">${s.timing}</span>
+          <button class="ctl-btn" onclick="adj(${i},'timing',+100)">+</button>
+        </div>` : `<span class="static-val">—</span>`;
 
             const castCell = hasCast
                 ? `<div class="ctrl-cell">
-         <button class="ctl-btn cast-minus" onclick="adj(${i},'cast',-1)" title="1초 감소 → 스코어 +20%">−</button>
-         <span class="ctl-val cast-val">${s.castSpeed}s</span>
-         <button class="ctl-btn cast-plus"  onclick="adj(${i},'cast',+1)" title="1초 증가 → 스코어 -20%">+</button>
-       </div>`
-                : `<span class="cast-na">—</span>`;
+          <button class="ctl-btn cast-minus" onclick="adj(${i},'cast',-1)">−</button>
+          <span class="ctl-val cast-val">${s.castSpeed}s</span>
+          <button class="ctl-btn cast-plus"  onclick="adj(${i},'cast',+1)">+</button>
+        </div>` : `<span class="cast-na">—</span>`;
 
             document.getElementById(`row-${i}`).innerHTML = `
-    <td>${m.boss ? '👑 ' : ''}${m.name}</td>
-    <td>
-      <div class="ctrl-cell">
-        <button class="ctl-btn minus" onclick="adj(${i},'hp',-1)">−</button>
-        <span class="ctl-val">${s.hp}</span>
-        <button class="ctl-btn" onclick="adj(${i},'hp',+1)">+</button>
-      </div>
-    </td>
-    <td>
-      <div class="ctrl-cell">
-        <button class="ctl-btn minus" onclick="adj(${i},'speed',-1)">−</button>
-        <span class="ctl-val">${s.speed.toFixed(1)}</span>
-        <button class="ctl-btn" onclick="adj(${i},'speed',+1)">+</button>
-      </div>
-    </td>
-    <td><span class="static-val">${m.size.toFixed(2)}</span></td>
-    <td>
-      <div class="ctrl-cell">
-        <button class="ctl-btn minus" onclick="adj(${i},'dmg',-3)">−</button>
-        <span class="ctl-val">${s.dmg}</span>
-        <button class="ctl-btn" onclick="adj(${i},'dmg',+3)">+</button>
-      </div>
-    </td>
-    <td>
-      ${hasLen
-                    ? `<div class="ctrl-cell">
-             <button class="ctl-btn minus" onclick="adj(${i},'len',-1)">−</button>
-             <span class="ctl-val">${s.minLen}·${s.maxLen}</span>
-             <button class="ctl-btn" onclick="adj(${i},'len',+1)">+</button>
-           </div>`
-                    : `<span class="static-val">N/A</span>`}
-    </td>
-    <td>${evadeCell}</td>
-    <td>${stunCell}</td>
-    <td>${timingCell}</td>
-    <td>${castCell}</td>
-    <td>
-      <div class="score-cell">
-        <div class="score-num">${fmt(newScore)}</div>
-        <div class="score-delta ${deltaClass}">${deltaText}</div>
-      </div>
-    </td>
-  `;
+                <td>${m.boss ? '👑 ' : ''}${m.name}</td>
+                <td><div class="ctrl-cell"><button class="ctl-btn minus" onclick="adj(${i},'hp',-1)">−</button><span class="ctl-val">${s.hp}</span><button class="ctl-btn" onclick="adj(${i},'hp',+1)">+</button></div></td>
+                <td><div class="ctrl-cell"><button class="ctl-btn minus" onclick="adj(${i},'speed',-1)">−</button><span class="ctl-val">${s.speed.toFixed(1)}</span><button class="ctl-btn" onclick="adj(${i},'speed',+1)">+</button></div></td>
+                <td><span class="static-val">${m.size.toFixed(2)}</span></td>
+                <td><div class="ctrl-cell"><button class="ctl-btn minus" onclick="adj(${i},'dmg',-3)">−</button><span class="ctl-val">${s.dmg}</span><button class="ctl-btn" onclick="adj(${i},'dmg',+3)">+</button></div></td>
+                <td>${hasLen ? `<div class="ctrl-cell"><button class="ctl-btn minus" onclick="adj(${i},'len',-1)">−</button><span class="ctl-val">${s.minLen}·${s.maxLen}</span><button class="ctl-btn" onclick="adj(${i},'len',+1)">+</button></div>` : `<span class="static-val">N/A</span>`}</td>
+                <td>${evadeCell}</td><td>${stunCell}</td><td>${timingCell}</td><td>${castCell}</td>
+                <td><div class="score-cell"><div class="score-num">${fmt(newScore)}</div><div class="score-delta ${deltaClass}">${deltaText}</div></div></td>
+            `;
         }
 
         function adj(i, field, delta) {
             const s = state[i];
-            if (field === 'hp') {
-                if (s.hp + delta < 1) return;
-                s.hp += delta;
-            } else if (field === 'speed') {
-                const nv = Math.round((s.speed + delta * 0.1) * 10) / 10;
-                if (nv < 0.1) return;
-                s.speed = nv;
-            } else if (field === 'dmg') {
-                const nv = s.dmg + delta;
-                if (nv < 0) return;
-                s.dmg = nv;
-            } else if (field === 'len') {
-                if (s.minLen + delta < 1) return;
-                s.minLen += delta;
-                s.maxLen += delta;
-            } else if (field === 'cast') {
-                const nv = s.castSpeed + delta;
-                if (nv < 1) return;
-                s.castSpeed = nv;
-            } else if (field === 'evade') {
-                const nv = s.evade + delta;
-                if (nv < 0 || nv > 100) return;
-                s.evade = nv;
-            } else if (field === 'stun') {
-                const nv = s.stun + delta;
-                if (nv < 0) return;
-                s.stun = nv;
-            } else if (field === 'timing') {
-                const nv = s.timing + delta;
-                if (nv < 0) return;
-                s.timing = nv;
-            }
+            if (field === 'hp') { if (s.hp + delta < 1) return; s.hp += delta; }
+            else if (field === 'speed') { const nv = Math.round((s.speed + delta * 0.1) * 10) / 10; if (nv < 0.1) return; s.speed = nv; }
+            else if (field === 'dmg') { const nv = s.dmg + delta; if (nv < 0) return; s.dmg = nv; }
+            else if (field === 'len') { if (s.minLen + delta < 1) return; s.minLen += delta; s.maxLen += delta; }
+            else if (field === 'cast') { const nv = s.castSpeed + delta; if (nv < 1) return; s.castSpeed = nv; }
+            else if (field === 'evade') { const nv = s.evade + delta; if (nv < 0 || nv > 100) return; s.evade = nv; }
+            else if (field === 'stun') { const nv = s.stun + delta; if (nv < 0) return; s.stun = nv; }
+            else if (field === 'timing') { const nv = s.timing + delta; if (nv < 0) return; s.timing = nv; }
             renderRow(i);
         }
 
@@ -557,6 +670,123 @@
             BASE.forEach((_, i) => renderRow(i));
         }
 
+        // --- Wave Calculator Logic ---
+        function initWave() {
+            const tbody = document.getElementById('wave-tbody');
+            tbody.innerHTML = '';
+            BASE.forEach((m, mi) => {
+                const tr = document.createElement('tr');
+                let html = `<td><input type="checkbox" class="monster-check" id="check-${mi}" onchange="toggleMonsterRow(${mi})"> ${m.name}</td>`;
+                for (let wi = 0; wi < 6; wi++) {
+                    html += `<td><input type="number" class="wave-input" id="input-${mi}-${wi}" value="${waveState[mi][wi].rate}" oninput="updateRate(${mi}, ${wi}, this.value)" min="0" max="100"></td>`;
+                }
+                tr.innerHTML = html;
+                tbody.appendChild(tr);
+            });
+            
+            // Apply initial checkbox states from waveState
+            // Since checkboxes are per-monster but constraints are per-wave, 
+            // we need a slightly different approach if a monster is used in W1 but not W2.
+            // Wait, the user said "마리수는 강제야". This implies the selection is the same across waves?
+            // "w1 몬스터 이름에 체크 3마리... w2 몬스터 이름에 체크 4마리 가능"
+            // This means each Wave column has its own selection!
+            // I need to change the UI to have checkboxes in EACH cell, or per row?
+            // "몬스터 이름에 체크" usually means per row. 
+            // If it's per row, then W1, W2, W3... all use the SAME 몬스터들.
+            // But W1 is 3마리, W2 is 4마리? This is impossible if "체크" is per row.
+            // It MUST be per wave. Let's fix the UI.
+        }
+
+        // Re-designing initWave for per-wave checkboxes
+        function renderWaveTable() {
+            const tbody = document.getElementById('wave-tbody');
+            tbody.innerHTML = '';
+            BASE.forEach((m, mi) => {
+                const tr = document.createElement('tr');
+                let html = `<td style="font-weight:500;">${m.name}</td>`;
+                for (let wi = 0; wi < 6; wi++) {
+                    const id = `${mi}-${wi}`;
+                    const checked = waveState[mi][wi].checked ? 'checked' : '';
+                    html += `<td>
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:5px;">
+                            <input type="checkbox" class="monster-check wave-cb-${wi}" id="cb-${id}" ${checked} onchange="toggleCB(${mi}, ${wi})">
+                            <input type="number" class="wave-input wave-in-${wi}" id="in-${id}" value="${waveState[mi][wi].rate}" oninput="updateRate(${mi}, ${wi}, this.value)" min="0" max="100">
+                        </div>
+                    </td>`;
+                }
+                tr.innerHTML = html;
+                tbody.appendChild(tr);
+            });
+            for(let wi=0; wi<6; wi++) updateWaveStatus(wi);
+        }
+
+        function toggleCB(mi, wi) {
+            const checkedCount = waveState.filter(row => row[wi].checked).length;
+            const limit = WAVE_LIMITS[wi];
+            
+            if (!waveState[mi][wi].checked && checkedCount >= limit) {
+                document.getElementById(`cb-${mi}-${wi}`).checked = false;
+                alert(`W${wi+1}은(는) 최대 ${limit}마리까지만 선택 가능합니다.`);
+                return;
+            }
+
+            waveState[mi][wi].checked = !waveState[mi][wi].checked;
+            if (!waveState[mi][wi].checked) waveState[mi][wi].rate = 0;
+            
+            updateWaveStatus(wi);
+        }
+
+        function updateRate(mi, wi, val) {
+            waveState[mi][wi].rate = parseInt(val) || 0;
+            calculateSums();
+        }
+
+        function updateWaveStatus(wi) {
+            const limit = WAVE_LIMITS[wi];
+            const checkedCount = waveState.filter(row => row[wi].checked).length;
+            const isLocked = checkedCount >= limit;
+            const isReady = checkedCount === limit;
+
+            // Update inputs and sums
+            BASE.forEach((_, mi) => {
+                const cb = document.getElementById(`cb-${mi}-${wi}`);
+                const input = document.getElementById(`in-${mi}-${wi}`);
+                
+                // If not checked and limit reached, disable checkbox
+                if (!waveState[mi][wi].checked) {
+                    cb.disabled = isLocked;
+                } else {
+                    cb.disabled = false;
+                }
+
+                // Input is only active if checked AND exactly 'limit' monsters are checked
+                input.disabled = !(waveState[mi][wi].checked && isReady);
+                if (!waveState[mi][wi].checked) input.value = 0;
+                else input.value = waveState[mi][wi].rate;
+            });
+
+            calculateSums();
+        }
+
+        function calculateSums() {
+            for (let wi = 0; wi < 6; wi++) {
+                const sum = waveState.reduce((acc, row) => acc + (row[wi].checked ? row[wi].rate : 0), 0);
+                const el = document.getElementById(`sum-w123456`.replace('123456', wi + 1));
+                el.innerText = `${sum}%`;
+                el.className = sum === 100 ? 'sum-val sum-ok' : 'sum-val sum-bad';
+            }
+        }
+
+        function resetWave() {
+            waveState = BASE.map((m, mi) => 
+                WAVE_LIMITS.map((_, wi) => ({
+                    checked: WAVE_DEFAULTS[mi][wi] > 0,
+                    rate: WAVE_DEFAULTS[mi][wi]
+                }))
+            );
+            renderWaveTable();
+        }
+
         function init() {
             const tbody = document.getElementById('tbody');
             tbody.innerHTML = '';
@@ -567,6 +797,7 @@
                 tbody.appendChild(tr);
                 renderRow(i);
             });
+            renderWaveTable();
         }
 
         init();
