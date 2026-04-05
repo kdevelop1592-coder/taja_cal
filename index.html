@@ -343,6 +343,9 @@
         <div class="rule-chip">⚡ 스피드 ±0.1 → 스코어 <span>±10%</span></div>
         <div class="rule-chip">🏰 데미지 ±3 → 스코어 <span>±10%</span></div>
         <div class="rule-chip">📏 MinLen·MaxLen 함께 ±1 → 스코어 <span>±10%</span></div>
+        <div class="rule-chip">💫 회피 ±10% → 스코어 <span>±10%</span> (발광버섯 전용)</div>
+        <div class="rule-chip">🌀 스턴 ±1초 → 스코어 <span>∓10%</span> (드래곤 전용)</div>
+        <div class="rule-chip">🚀 가속 ±100 → 스코어 <span>±10%</span> (나무상자 전용)</div>
         <div class="rule-chip cast-rule">🔮 캐스팅 −1초 → 스코어 <span>+20%</span> (보스 전용)</div>
     </div>
 
@@ -360,6 +363,9 @@
                         <th>📐 크기</th>
                         <th>🏰 데미지</th>
                         <th>📏 Min·MaxLen</th>
+                        <th>💫 회피(%)</th>
+                        <th>🌀 스턴(초)</th>
+                        <th>🚀 가속(ms)</th>
                         <th class="cast-col">🔮 캐스팅(초)</th>
                         <th>💰 스코어</th>
                     </tr>
@@ -373,20 +379,21 @@
 
     <script>
         const BASE = [
-            { name: "슬라임", hp: 1, speed: 0.6, size: 0.24, score: 200, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null },
-            { name: "머쉬룸", hp: 1, speed: 0.6, size: 0.69, score: 220, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null },
-            { name: "스켈레톤 보병", hp: 1, speed: 1.0, size: 0.9, score: 440, dmg: 10, minLen: 3, maxLen: 5, boss: false, castSpeed: null },
-            { name: "드래곤", hp: 2, speed: 0.65, size: 0.8, score: 640, dmg: 10, minLen: 4, maxLen: 6, boss: false, castSpeed: null },
-            { name: "트리몬트", hp: 1, speed: 1.0, size: 0.92, score: 280, dmg: 10, minLen: 3, maxLen: 4, boss: false, castSpeed: null },
-            { name: "미노타우르스", hp: 2, speed: 0.8, size: 0.47, score: 840, dmg: 15, minLen: 4, maxLen: 6, boss: false, castSpeed: null },
-            { name: "나무 상자", hp: 1, speed: 0.8, size: 1.0, score: 260, dmg: 10, minLen: 3, maxLen: 4, boss: false, castSpeed: null },
-            { name: "하이드라 (보스)", hp: 3, speed: 1.0, size: 1.0, score: 4000, dmg: 30, minLen: null, maxLen: null, boss: true, castSpeed: 16 },
-            { name: "발광 버섯", hp: 1, speed: 0.7, size: 1.0, score: 240, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null },
+            { name: "슬라임", hp: 1, speed: 0.6, size: 0.24, score: 200, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
+            { name: "머쉬룸", hp: 1, speed: 0.6, size: 0.69, score: 220, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
+            { name: "발광 버섯", hp: 1, speed: 0.7, size: 1.0, score: 240, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null, evade: 30, stun: null, timing: null },
+            { name: "나무 상자", hp: 1, speed: 0.8, size: 1.0, score: 260, dmg: 10, minLen: 3, maxLen: 4, boss: false, castSpeed: null, evade: null, stun: null, timing: 500 },
+            { name: "트리몬트", hp: 1, speed: 1.0, size: 0.92, score: 280, dmg: 10, minLen: 3, maxLen: 4, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
+            { name: "스켈레톤 보병", hp: 1, speed: 1.0, size: 0.9, score: 440, dmg: 10, minLen: 3, maxLen: 5, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
+            { name: "드래곤", hp: 2, speed: 0.65, size: 0.8, score: 640, dmg: 10, minLen: 4, maxLen: 6, boss: false, castSpeed: null, evade: null, stun: 2, timing: null },
+            { name: "미노타우르스", hp: 2, speed: 0.8, size: 0.47, score: 840, dmg: 15, minLen: 4, maxLen: 6, boss: false, castSpeed: null, evade: null, stun: null, timing: null },
+            { name: "하이드라 (보스)", hp: 3, speed: 1.0, size: 1.0, score: 4000, dmg: 30, minLen: null, maxLen: null, boss: true, castSpeed: 16, evade: null, stun: null, timing: null },
         ];
 
         let state = BASE.map(m => ({
             hp: m.hp, speed: m.speed, dmg: m.dmg,
             minLen: m.minLen, maxLen: m.maxLen, castSpeed: m.castSpeed,
+            evade: m.evade, stun: m.stun, timing: m.timing,
         }));
 
         function calcScore(i) {
@@ -396,13 +403,16 @@
             const spdD = Math.round((s.speed - m.speed) * 10);
             const dmgD = Math.round((s.dmg - m.dmg) / 3);
             const lenD = m.minLen !== null ? (s.minLen - m.minLen) : 0;
+            const evadeD = m.evade !== null ? (s.evade - m.evade) / 10 : 0;
+            const stunD = m.stun !== null ? (s.stun - m.stun) : 0;
+            const timingD = m.timing !== null ? (s.timing - m.timing) / 100 : 0;
             // 캐스팅: 1초 감소 → +20%, 1초 증가 → -20%
             const castD = m.castSpeed !== null ? (m.castSpeed - s.castSpeed) : 0;
 
-            let score = m.score;
-            score *= Math.pow(1.10, hpD + spdD + dmgD + lenD);
-            score *= Math.pow(1.20, castD);
-            return Math.round(score);
+            let factor = 1 + (hpD + spdD + dmgD + lenD + evadeD - stunD + timingD) * 0.10 + castD * 0.20;
+            if (factor < 0) factor = 0;
+
+            return Math.round(m.score * factor);
         }
 
         function fmt(n) { return n.toLocaleString(); }
@@ -418,6 +428,33 @@
 
             const hasLen = m.minLen !== null;
             const hasCast = m.castSpeed !== null;
+            const hasEvade = m.evade !== null;
+            const hasStun = m.stun !== null;
+            const hasTiming = m.timing !== null;
+
+            const evadeCell = hasEvade
+                ? `<div class="ctrl-cell">
+         <button class="ctl-btn minus" onclick="adj(${i},'evade',-10)">−</button>
+         <span class="ctl-val">${s.evade}%</span>
+         <button class="ctl-btn" onclick="adj(${i},'evade',+10)">+</button>
+       </div>`
+                : `<span class="static-val">—</span>`;
+
+            const stunCell = hasStun
+                ? `<div class="ctrl-cell">
+         <button class="ctl-btn minus" onclick="adj(${i},'stun',-1)">−</button>
+         <span class="ctl-val">${s.stun}s</span>
+         <button class="ctl-btn" onclick="adj(${i},'stun',+1)">+</button>
+       </div>`
+                : `<span class="static-val">—</span>`;
+
+            const timingCell = hasTiming
+                ? `<div class="ctrl-cell">
+         <button class="ctl-btn minus" onclick="adj(${i},'timing',-100)">−</button>
+         <span class="ctl-val">${s.timing}</span>
+         <button class="ctl-btn" onclick="adj(${i},'timing',+100)">+</button>
+       </div>`
+                : `<span class="static-val">—</span>`;
 
             const castCell = hasCast
                 ? `<div class="ctrl-cell">
@@ -460,6 +497,9 @@
            </div>`
                     : `<span class="static-val">N/A</span>`}
     </td>
+    <td>${evadeCell}</td>
+    <td>${stunCell}</td>
+    <td>${timingCell}</td>
     <td>${castCell}</td>
     <td>
       <div class="score-cell">
@@ -491,6 +531,18 @@
                 const nv = s.castSpeed + delta;
                 if (nv < 1) return;
                 s.castSpeed = nv;
+            } else if (field === 'evade') {
+                const nv = s.evade + delta;
+                if (nv < 0 || nv > 100) return;
+                s.evade = nv;
+            } else if (field === 'stun') {
+                const nv = s.stun + delta;
+                if (nv < 0) return;
+                s.stun = nv;
+            } else if (field === 'timing') {
+                const nv = s.timing + delta;
+                if (nv < 0) return;
+                s.timing = nv;
             }
             renderRow(i);
         }
@@ -499,6 +551,7 @@
             state = BASE.map(m => ({
                 hp: m.hp, speed: m.speed, dmg: m.dmg,
                 minLen: m.minLen, maxLen: m.maxLen, castSpeed: m.castSpeed,
+                evade: m.evade, stun: m.stun, timing: m.timing,
             }));
             BASE.forEach((_, i) => renderRow(i));
         }
