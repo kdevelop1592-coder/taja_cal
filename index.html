@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 몬스터 레벨 계산기</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0e0f14;
+            --surface: #16181f;
+            --card: #1c1f2a;
+            --border: #2a2d3a;
+            --accent: #5b8dee;
+            --accent2: #3ecf8e;
+            --danger: #f06a50;
+            --warn: #f5a623;
+            --cast: #c084fc;
+            --text: #e8eaf2;
+            --muted: #6b7190;
+            --muted2: #3d4160;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            font-size: 13px;
+            color: var(--muted);
+            margin-left: auto;
+        }
+
+        .rules {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .rule-chip {
+            font-size: 12px;
+            color: var(--muted);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .rule-chip span {
+            color: var(--accent2);
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .rule-chip.cast-rule span {
+            color: var(--cast);
+        }
+
+        main {
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+        }
+
+        .reset-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            padding: 7px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .reset-btn:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        thead th {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 10px 10px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        thead th:first-child {
+            text-align: left;
+            padding-left: 16px;
+        }
+
+        thead th.cast-col {
+            color: var(--cast);
+            opacity: 0.9;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.1s;
+        }
+
+        tbody tr:hover {
+            background: rgba(91, 141, 238, 0.04);
+        }
+
+        tbody td {
+            padding: 12px 6px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        tbody td:first-child {
+            text-align: left;
+            padding-left: 16px;
+            font-weight: 500;
+            white-space: nowrap;
+            color: var(--text);
+        }
+
+        .ctrl-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .ctl-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
+            flex-shrink: 0;
+        }
+
+        .ctl-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(91, 141, 238, 0.1);
+        }
+
+        .ctl-btn:active {
+            transform: scale(0.93);
+        }
+
+        .ctl-btn.minus:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+            background: rgba(240, 106, 80, 0.1);
+        }
+
+        /* casting: minus = faster = score UP → green; plus = slower = score DOWN → red */
+        .ctl-btn.cast-minus:hover {
+            border-color: var(--accent2);
+            color: var(--accent2);
+            background: rgba(62, 207, 142, 0.1);
+        }
+
+        .ctl-btn.cast-plus:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+            background: rgba(240, 106, 80, 0.1);
+        }
+
+        .ctl-val {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            min-width: 34px;
+            text-align: center;
+            color: var(--text);
+        }
+
+        .ctl-val.cast-val {
+            color: var(--cast);
+            min-width: 44px;
+        }
+
+        .score-cell {
+            text-align: center;
+        }
+
+        .score-num {
+            font-family: 'Space Mono', monospace;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .score-delta {
+            font-size: 11px;
+            font-family: 'Space Mono', monospace;
+            margin-top: 2px;
+        }
+
+        .delta-up {
+            color: var(--accent2);
+        }
+
+        .delta-dn {
+            color: var(--danger);
+        }
+
+        .delta-eq {
+            color: var(--muted);
+        }
+
+        .static-val {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        tr.boss td:first-child {
+            color: var(--warn);
+        }
+
+        tr.boss .score-num {
+            color: var(--warn);
+        }
+
+        .cast-na {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            color: var(--muted2);
+        }
+
+        footer {
+            text-align: center;
+            padding: 32px;
+            font-size: 12px;
+            color: var(--muted2);
+            font-family: 'Space Mono', monospace;
+        }
+
+        @media (max-width: 760px) {
+            main {
+                padding: 10px;
+            }
+
+            header p {
+                display: none;
+            }
+
+            .rules {
+                gap: 6px;
+                padding: 8px 12px;
+            }
+
+            .rule-chip {
+                font-size: 11px;
+                padding: 3px 9px;
+            }
+
+            thead th,
+            tbody td {
+                padding: 8px 3px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>⚔️ MONSTER LEVEL CALC</h1>
+        <p>중학교 게임 디자인 수업용 레벨 계산기</p>
+    </header>
+
+    <div class="rules">
+        <div class="rule-chip">❤️ 체력 ±1 → 스코어 <span>±10%</span></div>
+        <div class="rule-chip">⚡ 스피드 ±0.1 → 스코어 <span>±10%</span></div>
+        <div class="rule-chip">🏰 데미지 ±3 → 스코어 <span>±10%</span></div>
+        <div class="rule-chip">📏 MinLen·MaxLen 함께 ±1 → 스코어 <span>±10%</span></div>
+        <div class="rule-chip cast-rule">🔮 캐스팅 −1초 → 스코어 <span>+20%</span> (보스 전용)</div>
+    </div>
+
+    <main>
+        <div class="top-bar">
+            <button class="reset-btn" onclick="resetAll()">↺ 전체 초기화</button>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>이름</th>
+                        <th>❤️ 체력</th>
+                        <th>⚡ 스피드</th>
+                        <th>📐 크기</th>
+                        <th>🏰 데미지</th>
+                        <th>📏 Min·MaxLen</th>
+                        <th class="cast-col">🔮 캐스팅(초)</th>
+                        <th>💰 스코어</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer>MONSTER LEVEL CALCULATOR · GitHub Pages Edition</footer>
+
+    <script>
+        const BASE = [
+            { name: "슬라임", hp: 1, speed: 0.6, size: 0.24, score: 200, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null },
+            { name: "머쉬룸", hp: 1, speed: 0.6, size: 0.69, score: 220, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null },
+            { name: "스켈레톤 보병", hp: 1, speed: 1.0, size: 0.9, score: 440, dmg: 10, minLen: 3, maxLen: 5, boss: false, castSpeed: null },
+            { name: "드래곤", hp: 2, speed: 0.65, size: 0.8, score: 640, dmg: 10, minLen: 4, maxLen: 6, boss: false, castSpeed: null },
+            { name: "트리몬트", hp: 1, speed: 1.0, size: 0.92, score: 280, dmg: 10, minLen: 3, maxLen: 4, boss: false, castSpeed: null },
+            { name: "미노타우르스", hp: 2, speed: 0.8, size: 0.47, score: 840, dmg: 15, minLen: 4, maxLen: 6, boss: false, castSpeed: null },
+            { name: "나무 상자", hp: 1, speed: 0.8, size: 1.0, score: 260, dmg: 10, minLen: 3, maxLen: 4, boss: false, castSpeed: null },
+            { name: "하이드라 (보스)", hp: 3, speed: 1.0, size: 1.0, score: 4000, dmg: 30, minLen: null, maxLen: null, boss: true, castSpeed: 16 },
+            { name: "발광 버섯", hp: 1, speed: 0.7, size: 1.0, score: 240, dmg: 10, minLen: 2, maxLen: 4, boss: false, castSpeed: null },
+        ];
+
+        let state = BASE.map(m => ({
+            hp: m.hp, speed: m.speed, dmg: m.dmg,
+            minLen: m.minLen, maxLen: m.maxLen, castSpeed: m.castSpeed,
+        }));
+
+        function calcScore(i) {
+            const m = BASE[i];
+            const s = state[i];
+            const hpD = s.hp - m.hp;
+            const spdD = Math.round((s.speed - m.speed) * 10);
+            const dmgD = Math.round((s.dmg - m.dmg) / 3);
+            const lenD = m.minLen !== null ? (s.minLen - m.minLen) : 0;
+            // 캐스팅: 1초 감소 → +20%, 1초 증가 → -20%
+            const castD = m.castSpeed !== null ? (m.castSpeed - s.castSpeed) : 0;
+
+            let score = m.score;
+            score *= Math.pow(1.10, hpD + spdD + dmgD + lenD);
+            score *= Math.pow(1.20, castD);
+            return Math.round(score);
+        }
+
+        function fmt(n) { return n.toLocaleString(); }
+
+        function renderRow(i) {
+            const m = BASE[i];
+            const s = state[i];
+            const newScore = calcScore(i);
+            const diff = newScore - m.score;
+            const pct = ((diff / m.score) * 100).toFixed(0);
+            const deltaClass = diff > 0 ? 'delta-up' : diff < 0 ? 'delta-dn' : 'delta-eq';
+            const deltaText = diff > 0 ? `▲ +${pct}%` : diff < 0 ? `▼ ${pct}%` : '─';
+
+            const hasLen = m.minLen !== null;
+            const hasCast = m.castSpeed !== null;
+
+            const castCell = hasCast
+                ? `<div class="ctrl-cell">
+         <button class="ctl-btn cast-minus" onclick="adj(${i},'cast',-1)" title="1초 감소 → 스코어 +20%">−</button>
+         <span class="ctl-val cast-val">${s.castSpeed}s</span>
+         <button class="ctl-btn cast-plus"  onclick="adj(${i},'cast',+1)" title="1초 증가 → 스코어 -20%">+</button>
+       </div>`
+                : `<span class="cast-na">—</span>`;
+
+            document.getElementById(`row-${i}`).innerHTML = `
+    <td>${m.boss ? '👑 ' : ''}${m.name}</td>
+    <td>
+      <div class="ctrl-cell">
+        <button class="ctl-btn minus" onclick="adj(${i},'hp',-1)">−</button>
+        <span class="ctl-val">${s.hp}</span>
+        <button class="ctl-btn" onclick="adj(${i},'hp',+1)">+</button>
+      </div>
+    </td>
+    <td>
+      <div class="ctrl-cell">
+        <button class="ctl-btn minus" onclick="adj(${i},'speed',-1)">−</button>
+        <span class="ctl-val">${s.speed.toFixed(1)}</span>
+        <button class="ctl-btn" onclick="adj(${i},'speed',+1)">+</button>
+      </div>
+    </td>
+    <td><span class="static-val">${m.size.toFixed(2)}</span></td>
+    <td>
+      <div class="ctrl-cell">
+        <button class="ctl-btn minus" onclick="adj(${i},'dmg',-3)">−</button>
+        <span class="ctl-val">${s.dmg}</span>
+        <button class="ctl-btn" onclick="adj(${i},'dmg',+3)">+</button>
+      </div>
+    </td>
+    <td>
+      ${hasLen
+                    ? `<div class="ctrl-cell">
+             <button class="ctl-btn minus" onclick="adj(${i},'len',-1)">−</button>
+             <span class="ctl-val">${s.minLen}·${s.maxLen}</span>
+             <button class="ctl-btn" onclick="adj(${i},'len',+1)">+</button>
+           </div>`
+                    : `<span class="static-val">N/A</span>`}
+    </td>
+    <td>${castCell}</td>
+    <td>
+      <div class="score-cell">
+        <div class="score-num">${fmt(newScore)}</div>
+        <div class="score-delta ${deltaClass}">${deltaText}</div>
+      </div>
+    </td>
+  `;
+        }
+
+        function adj(i, field, delta) {
+            const s = state[i];
+            if (field === 'hp') {
+                if (s.hp + delta < 1) return;
+                s.hp += delta;
+            } else if (field === 'speed') {
+                const nv = Math.round((s.speed + delta * 0.1) * 10) / 10;
+                if (nv < 0.1) return;
+                s.speed = nv;
+            } else if (field === 'dmg') {
+                const nv = s.dmg + delta;
+                if (nv < 0) return;
+                s.dmg = nv;
+            } else if (field === 'len') {
+                if (s.minLen + delta < 1) return;
+                s.minLen += delta;
+                s.maxLen += delta;
+            } else if (field === 'cast') {
+                const nv = s.castSpeed + delta;
+                if (nv < 1) return;
+                s.castSpeed = nv;
+            }
+            renderRow(i);
+        }
+
+        function resetAll() {
+            state = BASE.map(m => ({
+                hp: m.hp, speed: m.speed, dmg: m.dmg,
+                minLen: m.minLen, maxLen: m.maxLen, castSpeed: m.castSpeed,
+            }));
+            BASE.forEach((_, i) => renderRow(i));
+        }
+
+        function init() {
+            const tbody = document.getElementById('tbody');
+            tbody.innerHTML = '';
+            BASE.forEach((m, i) => {
+                const tr = document.createElement('tr');
+                tr.id = `row-${i}`;
+                if (m.boss) tr.className = 'boss';
+                tbody.appendChild(tr);
+                renderRow(i);
+            });
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
