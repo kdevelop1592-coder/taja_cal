@@ -396,6 +396,7 @@
             font-weight: 700;
             font-family: 'Space Mono', monospace;
             border-top: 2px solid var(--border);
+            text-align: center;
         }
 
         .sum-val {
@@ -496,28 +497,12 @@
             <div class="table-wrap">
                 <table id="wave-table">
                     <thead>
-                        <tr>
-                            <th style="text-align: left;">몬스터 이름 (체크)</th>
-                            <th>W1 (3마리)</th>
-                            <th>W2 (4마리)</th>
-                            <th>W3 (5마리)</th>
-                            <th>W4 (6마리)</th>
-                            <th>W5 (7마리)</th>
-                            <th>W6 (8마리)</th>
+                        <tr id="wave-thead-tr">
+                            <!-- JS will fill this: Wave, Monster 1, ..., Monster 8, Total -->
                         </tr>
                     </thead>
                     <tbody id="wave-tbody"></tbody>
-                    <tfoot>
-                        <tr class="sum-row">
-                            <td style="text-align: right; padding-right: 20px;">합계 (목표: 100%)</td>
-                            <td id="sum-w1">0%</td>
-                            <td id="sum-w2">0%</td>
-                            <td id="sum-w3">0%</td>
-                            <td id="sum-w4">0%</td>
-                            <td id="sum-w5">0%</td>
-                            <td id="sum-w6">0%</td>
-                        </tr>
-                    </tfoot>
+                    <!-- Footer is no longer needed for vertical sums -->
                 </table>
             </div>
         </main>
@@ -669,40 +654,24 @@
         }
 
         // --- Wave Calculator Logic ---
-        function initWave() {
-            const tbody = document.getElementById('wave-tbody');
-            tbody.innerHTML = '';
-            BASE.forEach((m, mi) => {
-                const tr = document.createElement('tr');
-                let html = `<td><input type="checkbox" class="monster-check" id="check-${mi}" onchange="toggleMonsterRow(${mi})"> ${m.name}</td>`;
-                for (let wi = 0; wi < 6; wi++) {
-                    html += `<td><input type="number" class="wave-input" id="input-${mi}-${wi}" value="${waveState[mi][wi].rate}" oninput="updateRate(${mi}, ${wi}, this.value)" min="0" max="100"></td>`;
-                }
-                tr.innerHTML = html;
-                tbody.appendChild(tr);
-            });
-            
-            // Apply initial checkbox states from waveState
-            // Since checkboxes are per-monster but constraints are per-wave, 
-            // we need a slightly different approach if a monster is used in W1 but not W2.
-            // Wait, the user said "마리수는 강제야". This implies the selection is the same across waves?
-            // "w1 몬스터 이름에 체크 3마리... w2 몬스터 이름에 체크 4마리 가능"
-            // This means each Wave column has its own selection!
-            // I need to change the UI to have checkboxes in EACH cell, or per row?
-            // "몬스터 이름에 체크" usually means per row. 
-            // If it's per row, then W1, W2, W3... all use the SAME 몬스터들.
-            // But W1 is 3마리, W2 is 4마리? This is impossible if "체크" is per row.
-            // It MUST be per wave. Let's fix the UI.
-        }
-
-        // Re-designing initWave for per-wave checkboxes
         function renderWaveTable() {
+            const theadTr = document.getElementById('wave-thead-tr');
             const tbody = document.getElementById('wave-tbody');
+            
+            // Render Header: Wave Label + Monster Names + Total
+            let headHtml = `<th style="text-align: left; width: 100px;">웨이브</th>`;
+            BASE.forEach(m => {
+                headHtml += `<th>${m.name}</th>`;
+            });
+            headHtml += `<th style="width: 100px;">합계 (100%)</th>`;
+            theadTr.innerHTML = headHtml;
+
+            // Render Body: 6 Wave rows
             tbody.innerHTML = '';
-            BASE.forEach((m, mi) => {
+            for (let wi = 0; wi < 6; wi++) {
                 const tr = document.createElement('tr');
-                let html = `<td style="font-weight:500;">${m.name}</td>`;
-                for (let wi = 0; wi < 6; wi++) {
+                let html = `<td style="font-weight:700; color:var(--accent);">W${wi+1} <span class="wave-limit-hint">${WAVE_LIMITS[wi]}마리</span></td>`;
+                BASE.forEach((m, mi) => {
                     const id = `${mi}-${wi}`;
                     const checked = waveState[mi][wi].checked ? 'checked' : '';
                     html += `<td>
@@ -711,20 +680,23 @@
                             <input type="number" class="wave-input wave-in-${wi}" id="in-${id}" value="${waveState[mi][wi].rate}" oninput="updateRate(${mi}, ${wi}, this.value)" min="0" max="100">
                         </div>
                     </td>`;
-                }
+                });
+                // Add sum cell at the end of the row
+                html += `<td id="sum-w${wi+1}" class="sum-val">0%</td>`;
                 tr.innerHTML = html;
                 tbody.appendChild(tr);
-            });
+            }
+            
             for(let wi=0; wi<6; wi++) updateWaveStatus(wi);
         }
 
         function toggleCB(mi, wi) {
-            const checkedCount = waveState.filter(row => row[wi].checked).length;
+            const rowCheckedCount = waveState.filter((_, idx) => waveState[idx][wi].checked).length;
             const limit = WAVE_LIMITS[wi];
             
-            if (!waveState[mi][wi].checked && checkedCount >= limit) {
+            if (!waveState[mi][wi].checked && rowCheckedCount >= limit) {
                 document.getElementById(`cb-${mi}-${wi}`).checked = false;
-                alert(`W${wi+1}은(는) 최대 ${limit}마리까지만 선택 가능합니다.`);
+                alert(`W${wi+1}은(는) 정확히 ${limit}마리까지만 선택 가능합니다.`);
                 return;
             }
 
@@ -741,23 +713,22 @@
 
         function updateWaveStatus(wi) {
             const limit = WAVE_LIMITS[wi];
-            const checkedCount = waveState.filter(row => row[wi].checked).length;
-            const isLocked = checkedCount >= limit;
-            const isReady = checkedCount === limit;
+            const rowCheckedCount = waveState.filter((_, idx) => waveState[idx][wi].checked).length;
+            const isLocked = rowCheckedCount >= limit;
+            const isReady = rowCheckedCount === limit;
 
-            // Update inputs and sums
             BASE.forEach((_, mi) => {
                 const cb = document.getElementById(`cb-${mi}-${wi}`);
                 const input = document.getElementById(`in-${mi}-${wi}`);
                 
-                // If not checked and limit reached, disable checkbox
+                // Toggle checkbox availability
                 if (!waveState[mi][wi].checked) {
                     cb.disabled = isLocked;
                 } else {
                     cb.disabled = false;
                 }
 
-                // Input is only active if checked AND exactly 'limit' monsters are checked
+                // Enable input only if correct monster count is reached for that wave
                 input.disabled = !(waveState[mi][wi].checked && isReady);
                 if (!waveState[mi][wi].checked) input.value = 0;
                 else input.value = waveState[mi][wi].rate;
@@ -768,10 +739,10 @@
 
         function calculateSums() {
             for (let wi = 0; wi < 6; wi++) {
-                const sum = waveState.reduce((acc, row) => acc + (row[wi].checked ? row[wi].rate : 0), 0);
-                const el = document.getElementById(`sum-w123456`.replace('123456', wi + 1));
-                el.innerText = `${sum}%`;
-                el.className = sum === 100 ? 'sum-val sum-ok' : 'sum-val sum-bad';
+                const rowSum = waveState.reduce((acc, row) => acc + (row[wi].checked ? row[wi].rate : 0), 0);
+                const el = document.getElementById(`sum-w${wi+1}`);
+                el.innerText = `${rowSum}%`;
+                el.className = rowSum === 100 ? 'sum-val sum-ok' : 'sum-val sum-bad';
             }
         }
 
