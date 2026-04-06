@@ -543,6 +543,8 @@
             minLen: m.minLen, maxLen: m.maxLen, castSpeed: m.castSpeed,
             evade: m.evade, stun: m.stun, timing: m.timing,
             shieldMin: m.shieldMin, shieldMax: m.shieldMax,
+            speedPenaltyCount: 0,
+            dmgPenaltyCount: 0,
         }));
 
         let waveState = BASE.map((m, mi) => 
@@ -656,8 +658,18 @@
         function adj(i, field, delta) {
             const s = state[i];
             if (field === 'hp') { if (s.hp + delta < 1) return; s.hp += delta; }
-            else if (field === 'speed') { const nv = Math.round((s.speed + delta * 0.1) * 10) / 10; if (nv < 0.1) return; s.speed = nv; }
-            else if (field === 'dmg') { const nv = s.dmg + delta; if (nv < 0) return; s.dmg = nv; }
+            else if (field === 'speed') {
+                const nv = Math.round((s.speed + delta * 0.1) * 10) / 10;
+                if (nv < 0.1) return;
+                s.speed = nv;
+                checkSpeedPenalty(i);
+            }
+            else if (field === 'dmg') {
+                const nv = s.dmg + delta;
+                if (nv < 0) return;
+                s.dmg = nv;
+                checkDmgPenalty(i);
+            }
             else if (field === 'len') { if (s.minLen + delta < 1) return; s.minLen += delta; s.maxLen += delta; }
             else if (field === 'cast') { const nv = s.castSpeed + delta; if (nv < 1) return; s.castSpeed = nv; }
             else if (field === 'evade') { const nv = s.evade + delta; if (nv < 0 || nv > 100) return; s.evade = nv; }
@@ -677,12 +689,65 @@
             renderRow(i);
         }
 
+        function checkSpeedPenalty(i) {
+            const s = state[i];
+            const baseSpd = BASE[i].speed;
+            const diff = Math.round((baseSpd - s.speed) * 10) / 10;
+
+            let targetPenalty = 0;
+            if (diff >= 0.9) targetPenalty = 3;      // 0.4 + 0.3 + 0.2
+            else if (diff >= 0.7) targetPenalty = 2; // 0.4 + 0.3
+            else if (diff >= 0.4) targetPenalty = 1; // 0.4
+
+            const currentPenalty = s.speedPenaltyCount || 0;
+
+            if (targetPenalty > currentPenalty) {
+                const add = targetPenalty - currentPenalty;
+                s.hp += add;
+                s.speedPenaltyCount = targetPenalty;
+                alert(`[유리 대포 방지 룰]\n속도가 너무 낮아져 체력이 ${add} 상승합니다.`);
+            } else if (targetPenalty < currentPenalty) {
+                const sub = currentPenalty - targetPenalty;
+                s.hp = Math.max(1, s.hp - sub);
+                s.speedPenaltyCount = targetPenalty;
+            }
+        }
+
+        function checkDmgPenalty(i) {
+            const s = state[i];
+            const baseDmg = BASE[i].dmg;
+            const diff = s.dmg - baseDmg;
+
+            let targetPenalty = 0;
+            if (diff >= 9) {
+                targetPenalty = Math.floor((diff - 6) / 3);
+            }
+
+            const currentPenalty = s.dmgPenaltyCount || 0;
+
+            if (targetPenalty !== currentPenalty) {
+                const diffCount = targetPenalty - currentPenalty;
+                const spdChange = Math.round(diffCount * 0.1 * 10) / 10;
+                s.speed = Math.max(0.1, Math.round((s.speed + spdChange) * 10) / 10);
+                s.dmgPenaltyCount = targetPenalty;
+                
+                if (diffCount > 0) {
+                    alert(`[변인 연동 패널티]\n공격력이 너무 높아져 속도가 ${spdChange.toFixed(1)} 상승합니다.`);
+                }
+                
+                // 속도가 변했으므로 속도에 따른 체력 페널티도 재계산
+                checkSpeedPenalty(i);
+            }
+        }
+
         function resetAll() {
             state = BASE.map(m => ({
                 hp: m.hp, speed: m.speed, dmg: m.dmg,
                 minLen: m.minLen, maxLen: m.maxLen, castSpeed: m.castSpeed,
                 evade: m.evade, stun: m.stun, timing: m.timing,
                 shieldMin: m.shieldMin, shieldMax: m.shieldMax,
+                speedPenaltyCount: 0,
+                dmgPenaltyCount: 0,
             }));
             BASE.forEach((_, i) => renderRow(i));
         }
