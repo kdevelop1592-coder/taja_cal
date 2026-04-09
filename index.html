@@ -525,7 +525,7 @@
 
     <div id="content-lvl" class="tab-content active">
         <div class="rules">
-            <div class="rule-chip">❤️ 체력 ±1 → 스코어 <span>±10%</span></div>
+            <div class="rule-chip">❤️ 체력 ±1 → 스코어 <span>±20%</span></div>
             <div class="rule-chip">⚡ 스피드 ±0.1 → 스코어 <span>±10%</span></div>
             <div class="rule-chip">🏰 데미지 ±3 → 스코어 <span>±10%</span></div>
             <div class="rule-chip">📏 MinLen·MaxLen 함께 ±1 → 스코어 <span>±10%</span></div>
@@ -674,7 +674,7 @@
             const timingD = m.timing !== null ? (s.timing - m.timing) / 100 : 0;
             const castD = m.castSpeed !== null ? (m.castSpeed - s.castSpeed) : 0;
             const shieldD = (m.shieldMin !== null) ? (s.shieldMin - m.shieldMin + s.shieldMax - m.shieldMax) : 0;
-            let factor = 1 + (hpD + spdD + dmgD + lenD + evadeD - stunD + timingD) * 0.10 + castD * 0.20 - shieldD * 0.10;
+            let factor = 1 + hpD * 0.20 + (spdD + dmgD + lenD + evadeD - stunD + timingD) * 0.10 + castD * 0.20 - shieldD * 0.10;
             if (factor < 0) factor = 0;
             return Math.round(m.score * factor);
         }
