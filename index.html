@@ -774,7 +774,7 @@
             else if (field === 'stun') { const nv = s.stun + delta; if (nv < 0) return; s.stun = nv; }
             else if (field === 'shieldMin') {
                 const nv = s.shieldMin + delta;
-                if (nv < 0) return;
+                if (nv < 1) return;
                 s.shieldMin = nv;
                 if (s.shieldMin > s.shieldMax) s.shieldMax = s.shieldMin;
             } else if (field === 'shieldMax') {
@@ -783,7 +783,14 @@
                 if (nv < s.shieldMin) return;
                 s.shieldMax = nv;
             }
-            else if (field === 'timing') { const nv = s.timing + delta; if (nv < 0) return; s.timing = nv; }
+            else if (field === 'timing') { 
+                const nv = s.timing + delta; 
+                if (nv < 0) return; 
+                if (m.name === '트리몬트' && nv > 750) return;
+                if (m.name === '나무 상자' && nv > 700) return;
+                if (m.name === '미노타우르스' && nv > 400) return;
+                s.timing = nv; 
+            }
             renderRow(i);
         }
 
