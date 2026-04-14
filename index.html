@@ -532,7 +532,7 @@
             <div class="rule-chip">💫 회피 ±10% → 스코어 <span>±10%</span> (발광버섯 전용)</div>
             <div class="rule-chip">🌀 스턴 ±1초 → 스코어 <span>∓10%</span> (드래곤 전용)</div>
             <div class="rule-chip">🦶 걸음수 ±1 → 스코어 <span>∓10%</span> (스켈레톤 전용)</div>
-            <div class="rule-chip">📏 거리 ±100 → 스코어 <span>±10%</span> (상자/트리몬트 전용)</div>
+            <div class="rule-chip">📏 거리 ±100 → 스코어 <span>±10%</span> (상자/트리몬트/미노타우르스 전용)</div>
             <div class="rule-chip cast-rule">🔮 캐스팅 −1초 → 스코어 <span>+20%</span> (보스 전용)</div>
         </div>
 
@@ -754,6 +754,7 @@
         }
 
         function adj(i, field, delta) {
+            const m = BASE[i];
             const s = state[i];
             if (field === 'hp') { if (s.hp + delta < 1) return; s.hp += delta; }
             else if (field === 'speed') {
